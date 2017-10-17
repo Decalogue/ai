@@ -2,9 +2,9 @@
 
 [![Build Status](https://secure.travis-ci.org/Decalogue/ai.png)](http://travis-ci.org/Decalogue/ai)
 
-`AI is an artificial intelligence tool lib. AI 是一个人工智能工具库。`
-
 [![Documentation Status](https://readthedocs.org/projects/ai-cn/badge/?version=latest)](http://ai-cn.readthedocs.io/zh_CN/latest/?badge=latest)
+
+`AI is an artificial intelligence tool lib. AI 是一个人工智能工具库。`
 
 `Copyright © 2017 Rain. All Rights Reserved. `
 
