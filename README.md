@@ -1,6 +1,6 @@
 # ai
 
-[![Build Status] (https://secure.travis-ci.org/decalogue/ai.png)] (http://travis-ci.org/decalogue/ai)
+[![Build Status](https://secure.travis-ci.org/Decalogue/ai.png)](http://travis-ci.org/Decalogue/ai)
 
 `AI is an artificial intelligence tool lib. AI 是一个人工智能工具库。`
 
