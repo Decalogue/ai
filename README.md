@@ -1,7 +1,6 @@
 # ai
 
 [![Build Status](https://secure.travis-ci.org/Decalogue/ai.png)](http://travis-ci.org/Decalogue/ai)
-
 [![PyPI version](https://badge.fury.io/py/ai.svg)](https://badge.fury.io/py/ai)
 [![Py version](https://img.shields.io/pypi/pyversions/ai.svg)](https://github.com/Decalogue/ai)
 [![Documentation Status](https://readthedocs.org/projects/ai-cn/badge/?version=latest)](http://ai-cn.readthedocs.io/zh_CN/latest/?badge=latest)
