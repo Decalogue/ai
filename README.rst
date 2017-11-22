@@ -14,12 +14,12 @@ AI
    :target: https://pypi.python.org/pypi/ai
    :alt: Wheel Status
 
-.. image:: https://secure.travis-ci.org/Decalogue/ai.png
+.. image:: https://travis-ci.org/Decalogue/ai.svg?branch=master
    :target: http://travis-ci.org/Decalogue/ai
    :alt: Build Status
 
-.. image:: https://img.shields.io/codecov/c/github/ai/ai/master.svg
-   :target: https://codecov.io/github/ai/ai?branch=master
+.. image:: https://img.shields.io/codecov/c/github/Decalogue/ai.svg
+   :target: https://codecov.io/gh/Decalogue/ai
    :alt: Coverage report
 
 .. image:: https://readthedocs.org/projects/ai-cn/badge/?version=latest
@@ -51,3 +51,14 @@ Documentation
 =============
 
 Documentation is available online at http://ai-cn.readthedocs.io/zh_CN/latest/?badge=latest
+
+Contact me
+==========
+
+You can contact me with wechat if you want to know more about AI.
+
+.. image:: https://github.com/Decalogue/XLearn/blob/master/img/QRcode.jpg
+   :target: https://github.com/Decalogue/ai
+   :alt: Contact me
+
+Author: `Decalogue <https://www.decalogue.cn>`_
