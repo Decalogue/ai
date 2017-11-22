@@ -1,11 +1,40 @@
 # -*- coding: utf-8 -*-
-
+import os
+import sys
 from setuptools import setup, find_packages
+
+version = "0.0.1"
+
+if sys.argv[-1] == 'tag':
+    os.system("git tag -a %s -m 'version %s'" % (version, version))
+    os.system("git push --tags")
+    sys.exit()
+elif sys.argv[-1] == 'publish':
+    # os.system("python setup.py sdist upload")
+    # os.system("python setup.py bdist_wheel upload")
+    os.system("python setup.py sdist")
+    # os.system("python setup.py bdist_wheel")
+    os.system("twine upload dist\*")
+    sys.exit()
+elif sys.argv[-1] == 'test':
+    test_requirements = [
+        'pytest',
+        'flake8',
+        'coverage'
+    ]
+    try:
+        modules = map(__import__, test_requirements)
+    except ImportError as e:
+        err_msg = e.message.replace("No module named ", "")
+        msg = "%s is not installed. Install your test requirments." % err_msg
+        raise ImportError(msg)
+    os.system('py.test')
+    sys.exit()
 
 setup(
     name="ai",
     author="Decalogue",
-    version="0.0.1",
+    version=version,
     author_email="1044908508@qq.com",
     description="Ai lib.",
     license="MIT",
