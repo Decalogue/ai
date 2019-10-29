@@ -24,18 +24,19 @@ def extract_abstract(filepath, start_tag='Abstract', end_tags=end_tags):
 			if start_tag in l:
 				flag = True
 			elif flag:
+				l = l.strip()
+				if l == '':
+					continue
 				for t in end_tags:
 					if t in l or t.lower() in l:
 						if res:
 							res[-1] = res[-1].rstrip()
 						return ''.join(res)
+				if l.endswith('-'):
+					l = l[:-1]
 				else:
-					l = l.strip()
-					if l.endswith('-'):
-						l = l[:-1]
-					else:
-						l += ' '
-					res.append(l)
+					l += ' '
+				res.append(l)
 	if res:
 		res[-1] = res[-1].rstrip()
 	return ''.join(res)
