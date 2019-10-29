@@ -29,6 +29,27 @@ class Error(Exception):
         return repr(self.value)
 
 
+class StringPatternError(Error):
+    """Exception raised for errors in the pattern of string args."""
+    pass
+
+
+class JsonEncoder(json.JSONEncoder):
+    """JsonEncoder
+    解决json.dumps不能序列化datetime类型的问题：使用Python自带的json.dumps方法
+    转换数据为json的时候，如果格式化的数据中有datetime类型的数据时会报错。
+    TypeError: datetime.datetime(2014, 03, 20, 12, 10, 44) is not JSON serializable
+    Usage: json.dumps(data, cls=JsonEncoder)
+    """
+    def default(self, obj): 
+        if isinstance(obj, datetime.datetime):
+            return obj.strftime('%Y-%m-%d %H:%M:%S')  
+        elif isinstance(obj, datetime.date):
+            return obj.strftime('%Y-%m-%d')  
+        else:
+            return json.JSONEncoder.default(self, obj)
+
+
 def translate_baidu(content, fromLang='zh', toLang='en'):
     salt = str(random.randint(32768, 65536))
     sign = conf.translate.appid + content + salt + conf.translate.secretKey
