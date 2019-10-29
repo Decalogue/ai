@@ -61,4 +61,4 @@ You can contact me with wechat if you want to know more about AI.
    :target: https://github.com/Decalogue/ai
    :alt: Contact me
 
-Author: `Decalogue <https://www.decalogue.cn>`_
+Author: `Decalogue`_
