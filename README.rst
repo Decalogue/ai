@@ -42,7 +42,7 @@ Install
 
 The quick way::
 
-    pip install ai
+    pip install --upgrade ai
 
 For more details see the install section in the documentation:
 http://ai-cn.readthedocs.io/zh_CN/latest/?badge=latest
@@ -57,7 +57,7 @@ Contact me
 
 You can contact me with wechat if you want to know more about AI.
 
-.. image:: https://github.com/Decalogue/XLearn/blob/master/img/QRcode.jpg
+.. image:: https://github.com/Decalogue/ai/blob/master/docs/QRcode.jpg
    :target: https://github.com/Decalogue/ai
    :alt: Contact me
 
