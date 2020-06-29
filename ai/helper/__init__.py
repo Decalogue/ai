@@ -1,27 +1,36 @@
 # -*- coding: utf-8 -*-
-"""ai.helper"""
+""" ai.helper """
 
+import argparse
 import os
+import re
 import time
 import datetime
 import hashlib
 import inspect
 import json
+import logging
 import random
 import requests
 import socket
 import uuid
+import numpy as np
 from collections import Counter, OrderedDict
 from functools import wraps
+from logging import Logger
+from logging.handlers import TimedRotatingFileHandler
 from time import sleep
+from sklearn.feature_extraction.text import CountVectorizer
+from ai.conf import Config
 
-from ai.iconf import Config, get_yaml
-
-conf = Config()
+cur_dir = os.path.split(os.path.realpath(__file__))[0]
+conf = Config(os.path.join(cur_dir, "self.conf"))
+not_zh = re.compile(r"[^\u4e00-\u9fa5]")
 
 
 class Error(Exception):
-    """Base class for exceptions in this module."""
+    """ Base class for exceptions in this module.
+    """
     def __init__(self, value):
         self.value = value
         
@@ -30,16 +39,18 @@ class Error(Exception):
 
 
 class StringPatternError(Error):
-    """Exception raised for errors in the pattern of string args."""
+    """ Exception raised for errors in the pattern of string args.
+    """
     pass
 
 
 class JsonEncoder(json.JSONEncoder):
-    """JsonEncoder
-    解决json.dumps不能序列化datetime类型的问题：使用Python自带的json.dumps方法
-    转换数据为json的时候，如果格式化的数据中有datetime类型的数据时会报错。
-    TypeError: datetime.datetime(2014, 03, 20, 12, 10, 44) is not JSON serializable
-    Usage: json.dumps(data, cls=JsonEncoder)
+    """ JsonEncoder
+        解决 json.dumps 不能序列化 datetime 类型的问题：使用 Python 自带的 json.dumps 方法
+        转换数据为 json 格式的时候，如果格式化的数据中有 datetime 类型的数据时将会报错。
+        TypeError: datetime.datetime(2014, 03, 20, 12, 10, 44) is not JSON serializable
+    Usage:
+        json.dumps(data, cls=JsonEncoder)
     """
     def default(self, obj): 
         if isinstance(obj, datetime.datetime):
@@ -50,9 +61,56 @@ class JsonEncoder(json.JSONEncoder):
             return json.JSONEncoder.default(self, obj)
 
 
+def ensure_dir(path):
+    """ 确保目录存在 """
+    if not os.path.exists(path):
+        os.makedirs(path)
+
+
+def init_logger(log_name, log_dir):
+    """ 日志模块
+        1. 同时将日志打印到屏幕和文件中
+        2. 默认值保留近30天日志文件
+    """
+    ensure_dir(log_dir)
+    if log_name not in Logger.manager.loggerDict:
+        logger = logging.getLogger(log_name)
+        logger.setLevel(logging.DEBUG)
+        handler = TimedRotatingFileHandler(
+            filename=os.path.join(log_dir, "%s.log" % log_name),
+            when="D",
+            backupCount=30,
+        )
+        datefmt = "%Y-%m-%d %H:%M:%S"
+        format_str = "[%(asctime)s]: %(name)s %(filename)s[line:%(lineno)s] %(levelname)s  %(message)s"
+        formatter = logging.Formatter(format_str, datefmt)
+        handler.setFormatter(formatter)
+        handler.setLevel(logging.INFO)
+        logger.addHandler(handler)
+        console = logging.StreamHandler()
+        console.setLevel(logging.INFO)
+        console.setFormatter(formatter)
+        logger.addHandler(console)
+
+        handler = TimedRotatingFileHandler(
+            filename=os.path.join(log_dir, "ERROR.log"),
+            when="D",
+            backupCount=30,
+        )
+        datefmt = "%Y-%m-%d %H:%M:%S"
+        format_str = "[%(asctime)s]: %(name)s %(filename)s[line:%(lineno)s] %(levelname)s  %(message)s"
+        formatter = logging.Formatter(format_str, datefmt)
+        handler.setFormatter(formatter)
+        handler.setLevel(logging.ERROR)
+        logger.addHandler(handler)
+    logger = logging.getLogger(log_name)
+    return logger
+
+
 def translate_baidu(content, fromLang='zh', toLang='en'):
+    """ 百度翻译 API """
     salt = str(random.randint(32768, 65536))
-    sign = conf.translate.appid + content + salt + conf.translate.secretKey
+    sign = conf.translate.appid + content + salt + conf.translate.secretkey
     sign = hashlib.md5(sign.encode("utf-8")).hexdigest()
     try:
         paramas = {
@@ -68,23 +126,12 @@ def translate_baidu(content, fromLang='zh', toLang='en'):
         res = [d["dst"] for d in data["trans_result"]]
         return res
     except Exception as e:
-        print(content)
+        print(content, e)
         return content.split('\n')
 
 
-def zh2en(content, limit=1):
-    sleep(limit)
-    res = translate_baidu(content)
-    return res
-
-
-def en2zh(content, limit=1):
-    sleep(limit)
-    res = translate_baidu(content, fromLang='en', toLang='zh')
-    return res
-
-
 def back_translate_zh(paras, limit=1):
+    """ 中文回译 """
     try:
         sleep(limit)
         tmp = translate_baidu('\n'.join(paras), fromLang='zh', toLang='en')
@@ -96,6 +143,7 @@ def back_translate_zh(paras, limit=1):
 
 
 def back_translate_en(paras, limit=1):
+    """ 英文回译 """
     try:
         sleep(limit)
         tmp = translate_baidu('\n'.join(paras), fromLang='en', toLang='zh')
@@ -107,6 +155,8 @@ def back_translate_en(paras, limit=1):
 
 
 def order_dict(d, mode='key'):
+    """ 对字典按照 key / value 排序
+    """
 	if mode == 'key':
 		res = sorted(d.items(), key=lambda t: t[0])
 	elif mode == 'value':
@@ -116,26 +166,26 @@ def order_dict(d, mode='key'):
 
 
 def get_mac_address():
-    """Get mac address.
+    """ Get mac address.
     """
     mac = uuid.UUID(int=uuid.getnode()).hex[-12:]
     return ":".join([mac[e:e+2] for e in range(0, 11, 2)])
 
 
 def get_hostname():
-    """Get hostname.
+    """ Get hostname.
     """
     return socket.getfqdn(socket.gethostname())
 
 
 def get_ip_address(hostname):
-    """Get host ip address.
+    """ Get host ip address.
     """
     return socket.gethostbyname(hostname)
 
 
 def get_host_ip():
-    """Get host ip address.
+    """ Get host ip address.
     """
     try:
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -147,23 +197,23 @@ def get_host_ip():
 
 
 def get_current_function_name():
-    """Get current function name.
+    """ Get current function name.
     """
     return inspect.stack()[1][3]
 
 
 class Walk():
-    """Walk directory to batch processing.
-    遍历目录进行批处理。
+    """ Walk directory to batch processing.
+        遍历目录进行批处理。
 
-    Subclasses may override the 'handle_file' method to provide custom file processing mode.
-    子类可以重写'handle_file'方法来实现自定义的文件处理方式。
+        Subclasses may override the 'handle_file' method to provide custom file processing mode.
+        子类可以重写 'handle_file' 方法来实现自定义的文件处理方式。
 
     Public attributes:
-    - filelist: All filenames with full path in directory.
-    - fnamelist: All filenames in directory.
-    - dirlist: All dirnames with full path in directory.
-    - dnamelist: All dirnames in directory.
+        - filelist: All filenames with full path in directory.
+        - fnamelist: All filenames in directory.
+        - dirlist: All dirnames with full path in directory.
+        - dnamelist: All dirnames in directory.
     """
     def __init__(self):
         self.filenum = 0
@@ -277,20 +327,20 @@ class Walk():
 
 
 def time_me(info="used", format_string="ms"):
-    """Performance analysis - time
+    """ Performance analysis - time
+        Decorator of time performance analysis.
+        性能分析——计时统计
 
-    Decorator of time performance analysis.
-    性能分析——计时统计
-    系统时间(wall clock time, elapsed time)是指一段程序从运行到终止，系统时钟走过的时间。
-    一般系统时间都是要大于CPU时间的。通常可以由系统提供，在C++/Windows中，可以由<time.h>提供。
-    注意得到的时间精度是和系统有关系的。
-    1.time.clock()以浮点数计算的秒数返回当前的CPU时间。用来衡量不同程序的耗时，比time.time()更有用。
-    time.clock()在不同的系统上含义不同。在UNIX系统上，它返回的是"进程时间"，它是用秒表示的浮点数（时间戳）。
-    而在WINDOWS中，第一次调用，返回的是进程运行的实际时间。而第二次之后的调用是自第一次
-    调用以后到现在的运行时间。（实际上是以WIN32上QueryPerformanceCounter()为基础，它比毫秒表示更为精确）
-    2.time.perf_counter()能够提供给定平台上精度最高的计时器。计算的仍然是系统时间，
-    这会受到许多不同因素的影响，例如机器当前负载。
-    3.time.process_time()提供进程时间。
+        系统时间(wall clock time, elapsed time)是指一段程序从运行到终止，系统时钟走过的时间。
+        一般系统时间都是要大于 CPU 时间的。通常可以由系统提供，在 C++/Windows 中，可以由 <time.h> 提供。
+        注意得到的时间精度是和系统有关系的。
+        1.time.clock() 以浮点数计算的秒数返回当前的 CPU 时间。用来衡量不同程序的耗时，比 time.time() 更有用。
+        time.clock() 在不同的系统上含义不同。在 UNIX 系统上，它返回的是'进程时间'，它是用秒表示的浮点数（时间戳）。
+        而在 WINDOWS 中，第一次调用，返回的是进程运行的实际时间。而第二次之后的调用是自第一次调用以后到现在的运行时间。
+        （实际上是以 WIN32 上 QueryPerformanceCounter() 为基础，它比毫秒表示更为精确）
+        2.time.perf_counter() 能够提供给定平台上精度最高的计时器。计算的仍然是系统时间，
+        这会受到许多不同因素的影响，例如机器当前负载。
+        3.time.process_time() 提供进程时间。
 
     Args:
         info: Customize print info. 自定义提示信息。
@@ -315,7 +365,7 @@ def time_me(info="used", format_string="ms"):
 
 
 def get_timestamp(s=None, style='%Y-%m-%d %H:%M:%S', pattern='s'):
-    """Get timestamp. 获取指定日期表示方式的时间戳或者当前时间戳。
+    """ Get timestamp. 获取指定日期表示方式的时间戳或者当前时间戳。
     
     Args:
         style: Specifies the format of time. 指定日期表示方式。
@@ -335,17 +385,18 @@ def get_timestamp(s=None, style='%Y-%m-%d %H:%M:%S', pattern='s'):
 
 
 def get_current_time(format_string="%Y-%m-%d-%H-%M-%S", info=None):
-    """Get current time with specific format_string.
-    获取指定日期表示方式的当前时间。
+    """ Get current time with specific format_string.
+        获取指定日期表示方式的当前时间。
+
+        For Python3
+        On Windows, time.strftime() and Unicode characters will raise UnicodeEncodeError.
+        http://bugs.python.org/issue8304
 
     Args:
         format_string: Specifies the format of time. 指定日期表示方式。
             Defaults to '%Y-%m-%d-%H-%M-%S'.
     """
     assert isinstance(format_string, str), "The format_string must be a string."
-    # Python3
-    # On Windows, time.strftime() and Unicode characters will raise UnicodeEncodeError.
-    # http://bugs.python.org/issue8304
     try:
         current_time = time.strftime(format_string, time.localtime())
     except UnicodeEncodeError:
@@ -355,8 +406,8 @@ def get_current_time(format_string="%Y-%m-%d-%H-%M-%S", info=None):
 
 
 def get_age(format_string="%s年%s个月%s天", birthday="2018-1-1"):
-    """Get age with specific format_string.
-    获取指定日期表示方式的年龄。
+    """ Get age with specific format_string.
+        获取指定日期表示方式的年龄。
 
     Args:
         format_string: Specifies the format of time. 指定日期表示方式。
@@ -365,7 +416,7 @@ def get_age(format_string="%s年%s个月%s天", birthday="2018-1-1"):
     assert isinstance(format_string, str), "The format_string must be a string."
     assert isinstance(birthday, str), "The birthday must be a string."
     
-    # 方案1：根据日期字面差计算具体时长
+    # 方案1：根据每月具体天数计算具体时长
     mdays = [31, 31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30] # 从12（0）月到11月
     ct = get_current_time(format_string="%Y-%m-%d")
     st = [int(i) for i in birthday.split('-')]
@@ -387,7 +438,7 @@ def get_age(format_string="%s年%s个月%s天", birthday="2018-1-1"):
             month = et[1] + 12 - st[1] - 1
             day = et[2] + mdays[(et[1] - 1) % 12] - st[2]
 
-    # 方案2：根据日期天数差计算具体时长
+    # 方案2：根据每月平均30天计算具体时长
     # start_time= datetime.datetime.strptime(birthday, "%Y-%m-%d")
     # end_time= datetime.datetime.strptime(ct, "%Y-%m-%d")
 
@@ -402,8 +453,8 @@ def get_age(format_string="%s年%s个月%s天", birthday="2018-1-1"):
     return age
 
 
-def readlines(filepath, start=0, n=0):
-    """按行读取从 start 位置开始的指定 n 行，当 n=0 时读取全部
+def readlines(filepath, start=0, n=None):
+    """ 按行读取从 start 位置开始的指定 n 行，当 n=None 时读取全部
     """
     with open(filepath, 'r', encoding='UTF-8') as f:
 	    if start > 0:
@@ -412,7 +463,90 @@ def readlines(filepath, start=0, n=0):
 	    cnt = 0
 	    while True:
 	        content = f.readline()
-	        if content == '' or (cnt >= n and n != 0):
+	        if content == '' or (cnt >= n and n != None):
 	            break
 	        cnt += 1
-	        yield content      
+	        yield content
+
+
+class AverageMeter(object):
+    """ Computes and stores the average and current value
+    """
+
+    def __init__(self):
+        self.reset()
+
+    def reset(self):
+        self.val = 0
+        self.avg = 0
+        self.sum = 0
+        self.count = 0
+
+    def update(self, val, n=1):
+        self.val = val
+        self.sum += val * n
+        self.count += n
+        self.avg = self.sum / self.count
+
+
+def remove_punc(text):
+    """ 中文去标点 """
+    text = not_zh.sub("", text)
+    return text
+
+
+def search(pattern, sequence):
+    """从 sequence 中寻找子串 pattern
+    如果找到，返回第一个下标；否则返回-1。
+    """
+    n = len(pattern)
+    for i in range(len(sequence)):
+        if sequence[i:i + n] == pattern:
+            return i
+    return -1
+
+
+def str2bool(v):
+    if v.lower() in ('yes', 'true', 't', 'y', '1'):
+        return True
+    elif v.lower() in ('no', 'false', 'f', 'n', '0'):
+        return False
+    else:
+        raise argparse.ArgumentTypeError('Boolean value expected.')
+
+
+def num_common_words(query, title):
+    """ 获取公共词的数量
+    """
+    query = set(query)
+    title = set(title)
+    return len(query & title)
+
+
+def jaccard(query, title):
+    """ 基于离散词的句子 jaccard 距离
+    """
+    query = set(query)
+    title = set(title)
+    intersection_len = len(query & title)
+    union_len = len(query | title)
+    return intersection_len / union_len
+
+
+def word_based_similarity(query, title, mode='cosine'):
+    """ 基于离散词的句子相似度
+    """
+    try:
+        counter = CountVectorizer(analyzer='word', token_pattern=u"(?u)\\b\\w+\\b")
+        counter.fit([query, title])
+        result = counter.transform([query, title]).toarray()
+        vec1, vec2 = result[0], result[1]
+        if mode == 'euclid':
+            return np.linalg.norm(vec1 - vec2)
+        elif mode == 'manhattan':
+            return np.sum(np.abs(vec1 - vec2))
+        else:
+            return np.sum(vec1 * vec2) / (np.linalg.norm(vec1) * np.linalg.norm(vec2))
+    except Exception as e:
+        print('Meet a outlier sample!')
+        return 0

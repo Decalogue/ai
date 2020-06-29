@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+""" ai.conf """
 
 import os
 import yaml
@@ -6,15 +7,15 @@ from configparser import ConfigParser
 
 
 class AttrDict(dict):
-    def __init__(self, *args, **kwargs):
-        super(AttrDict, self).__init__(*args, **kwargs)
-        self.__dict__ = self
+	def __init__(self, *args, **kwargs):
+		super(AttrDict, self).__init__(*args, **kwargs)
+		self.__dict__ = self
 
 
 def get_yaml(path):
 	"""yaml 方式配置
 	"""
-    return AttrDict(yaml.load(open(path, 'r')))
+	return AttrDict(yaml.load(open(path, 'r')))
 
 
 def get_conf(path):
@@ -66,7 +67,7 @@ class Config(object):
 			self.path = filepath
 		else:
 			cur_dir = os.path.split(os.path.realpath(__file__))[0]
-			self.path = os.path.join(cur_dir, "conf", "self.conf")
+			self.path = os.path.join(cur_dir, "self.conf")
 		self.conf = get_conf(self.path)
 		self.d = Dict()
 		for s in self.conf.sections():

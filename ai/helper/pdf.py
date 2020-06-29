@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+""" ai.helper.pdf """
+
 import pdfbox
 from pathlib import Path
 
@@ -11,8 +13,8 @@ end_tags = [
 
 
 def extract_abstract(filepath, start_tag='Abstract', end_tags=end_tags):
-	"""Extract abstract from a PDF-formatted scientific and technological article
-	从 PDF 格式的科技论文中抽取摘要
+	""" Extract abstract from a PDF-formatted scientific and technological article
+		从 PDF 格式的科技论文中抽取摘要
 	"""
 	text = p.extract_text(filepath, 'pdf.txt')
 	res = []

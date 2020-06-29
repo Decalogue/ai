@@ -3,7 +3,7 @@ import os
 import sys
 from setuptools import setup, find_packages
 
-version = "0.0.1"
+version = "0.0.3"
 
 if sys.argv[-1] == 'tag':
     os.system("git tag -a %s -m 'version %s'" % (version, version))
@@ -13,8 +13,7 @@ elif sys.argv[-1] == 'publish':
     # os.system("python setup.py sdist upload")
     # os.system("python setup.py bdist_wheel upload")
     os.system("python setup.py sdist")
-    # os.system("python setup.py bdist_wheel")
-    os.system("twine upload dist\*")
+    os.system("twine upload dist/*")
     sys.exit()
 elif sys.argv[-1] == 'test':
     test_requirements = [
@@ -52,8 +51,9 @@ setup(
         "Operating System :: POSIX :: Linux",
         "Operating System :: MacOS :: MacOS X",
         "Operating System :: Other OS",
-        "Programming Language :: Python :: 3.4",
         "Programming Language :: Python :: 3.5",
-        "Programming Language :: Python :: 3.6"
+        "Programming Language :: Python :: 3.6",
+        "Programming Language :: Python :: 3.7",
+        "Programming Language :: Python :: 3.8"
     ]
 )
