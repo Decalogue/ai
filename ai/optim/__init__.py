@@ -262,10 +262,10 @@ class AdamGC(Optimizer):
             raise ValueError("Invalid beta parameter at index 1: {}".format(betas[1]))
         defaults = dict(lr=lr, betas=betas, eps=eps, correct_bias=correct_bias,
                         weight_decay=weight_decay, amsgrad=amsgrad)
-        super(Adam_GC, self).__init__(params, defaults)
+        super(AdamGC, self).__init__(params, defaults)
 
     def __setstate__(self, state):
-        super(Adam_GC, self).__setstate__(state)
+        super(AdamGC, self).__setstate__(state)
         for group in self.param_groups:
             group.setdefault('amsgrad', False)
 
@@ -475,10 +475,10 @@ class AdamWGC(Optimizer):
             raise ValueError("Invalid beta parameter at index 1: {}".format(betas[1]))
         defaults = dict(lr=lr, betas=betas, eps=eps, correct_bias=correct_bias,
                         weight_decay=weight_decay, amsgrad=amsgrad)
-        super(AdamW_GC, self).__init__(params, defaults)
+        super(AdamWGC, self).__init__(params, defaults)
 
     def __setstate__(self, state):
-        super(AdamW_GC, self).__setstate__(state)
+        super(AdamWGC, self).__setstate__(state)
         for group in self.param_groups:
             group.setdefault('amsgrad', False)
 
@@ -583,7 +583,7 @@ class RangerGC(Optimizer):
         self.radam_buffer = [[None,None,None] for ind in range(10)]
 
     def __setstate__(self, state):
-        super(Ranger, self).__setstate__(state)
+        super(RangerGC, self).__setstate__(state)
 
 
     def step(self, closure=None):
