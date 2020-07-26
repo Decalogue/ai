@@ -157,12 +157,12 @@ def back_translate_en(paras, limit=1):
 def order_dict(d, mode='key'):
     """ 对字典按照 key / value 排序
     """
-	if mode == 'key':
-		res = sorted(d.items(), key=lambda t: t[0])
-	elif mode == 'value':
-		res = sorted(d.items(), key=lambda t: t[1])
-	res = OrderedDict(res)
-	return res
+    if mode == 'key':
+        res = sorted(d.items(), key=lambda t: t[0])
+    elif mode == 'value':
+        res = sorted(d.items(), key=lambda t: t[1])
+    res = OrderedDict(res)
+    return res
 
 
 def get_mac_address():
