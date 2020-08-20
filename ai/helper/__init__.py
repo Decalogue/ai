@@ -497,13 +497,25 @@ def remove_punc(text):
 
 def search(pattern, sequence):
     """从 sequence 中寻找子串 pattern
-    如果找到，返回第一个下标；否则返回-1。
+    如果找到，返回第一个下标；否则返回 -1。
     """
     n = len(pattern)
     for i in range(len(sequence)):
         if sequence[i:i + n] == pattern:
             return i
     return -1
+
+
+def search_all(pattern, sequence):
+    """从 sequence 中寻找子串 pattern
+    如果找到，返回所有起始坐标；否则返回 []。
+    """
+    res = []
+    n = len(pattern)
+    for i in range(len(sequence)):
+        if sequence[i:i + n] == pattern:
+            res.append([i, i+n-1])
+    return res
 
 
 def str2bool(v):

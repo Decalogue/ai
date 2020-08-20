@@ -15,7 +15,7 @@ class AttrDict(dict):
 def get_yaml(path):
 	"""yaml 方式配置
 	"""
-	return AttrDict(yaml.load(open(path, 'r')))
+	return AttrDict(yaml.load(open(path, 'r'), Loader=yaml.FullLoader))
 
 
 def get_conf(path):
