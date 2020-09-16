@@ -331,9 +331,9 @@ class AdamGC(Optimizer):
                     # Maintains the maximum of all 2nd moment running avg. till now
                     torch.max(max_exp_avg_sq, exp_avg_sq, out=max_exp_avg_sq)
                     # Use the max. for normalizing running avg. of gradient
-                    denom = (max_exp_avg_sq.sqrt() / math.sqrt(bias_correction2)).add_(group['eps'])
+                    denom = max_exp_avg_sq.sqrt().add_(group['eps'])
                 else:
-                    denom = (exp_avg_sq.sqrt() / math.sqrt(bias_correction2)).add_(group['eps'])
+                    denom = exp_avg_sq.sqrt().add_(group['eps'])
 
                 p.data.addcdiv_(-step_size, exp_avg, denom)
 

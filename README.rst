@@ -14,14 +14,6 @@ AI
    :target: https://pypi.python.org/pypi/ai
    :alt: Wheel Status
 
-.. image:: https://travis-ci.org/Decalogue/ai.svg?branch=master
-   :target: http://travis-ci.org/Decalogue/ai
-   :alt: Build Status
-
-.. image:: https://img.shields.io/codecov/c/github/Decalogue/ai.svg
-   :target: https://codecov.io/gh/Decalogue/ai
-   :alt: Coverage report
-
 .. image:: https://readthedocs.org/projects/ai-cn/badge/?version=latest
    :target: http://ai-cn.readthedocs.io/zh_CN/latest/?badge=latest
    :alt: Documentation Status

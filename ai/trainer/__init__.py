@@ -12,7 +12,7 @@ if is_torch_available():
 if is_tf_available():
     import tensorflow as tf
 
-def set_seed(seed, n_gpu):
+def set_seed(seed, n_gpu=1):
     random.seed(seed)
     np.random.seed(seed)
     torch.manual_seed(seed)
