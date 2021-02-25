@@ -38,7 +38,7 @@ The quick way::
 Documentation
 =============
 
-Documentation is available online at http://ai-cn.readthedocs.io/zh_CN/latest/?badge=latest
+Documentation is available online at https://ai-cn.readthedocs.io/zh/latest/
 
 Contact me
 ==========
