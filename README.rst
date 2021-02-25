@@ -27,7 +27,6 @@ Requirements
 ============
 
 * Python 3.5+
-* Works on Linux, Windows, Mac OSX, MIT
 
 Install
 =======
@@ -35,9 +34,6 @@ Install
 The quick way::
 
     pip install --upgrade ai
-
-For more details see the install section in the documentation:
-http://ai-cn.readthedocs.io/zh_CN/latest/?badge=latest
 
 Documentation
 =============
