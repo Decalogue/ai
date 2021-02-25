@@ -6,7 +6,7 @@ import torch
 from os.path import isfile
 
 
-__version__ = '0.1.4'
+__version__ = '0.1.5'
 
 
 def set_all(seed, n_gpu=1):
