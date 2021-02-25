@@ -1,26 +1,7 @@
 # -*- coding: utf-8 -*-
-""" ai.training """
-import random
+""" ai.trainer """
 import numpy as np
 import torch
-
-
-if is_torch_available():
-    import torch
-    from torch.utils.data import TensorDataset
-
-if is_tf_available():
-    import tensorflow as tf
-
-def set_seed(seed, n_gpu=1):
-    random.seed(seed)
-    np.random.seed(seed)
-    torch.manual_seed(seed)
-    if n_gpu > 0:
-        torch.cuda.manual_seed_all(seed)
-
-def to_list(tensor):
-    return tensor.detach().cpu().tolist()
 
 
 class FGM():

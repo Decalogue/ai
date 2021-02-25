@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
-""" ai.helper.face """
-
+""" ai.helper.img """
 import os
 import bz2
 import cv2
@@ -85,7 +84,7 @@ def imresize(img_path, save_dir='.', size=(256, 256)):
 	im.save(f'{save_dir}/{name}')
 
 
-def imcrop_emo(img_path, threshold=0.9, qps=2, input_size=(256, 256), output_size=(256, 256), save_dir='.', align=False, fmt='.png'):
+def im2emocrop(img_path, threshold=0.9, qps=2, input_size=(256, 256), output_size=(256, 256), save_dir='.', align=False, fmt='.png'):
 	sleep(1 / qps)
 	try:
 		img = cv2.imread(img_path)
@@ -124,7 +123,7 @@ def imcrop_emo(img_path, threshold=0.9, qps=2, input_size=(256, 256), output_siz
 	return res
 
 
-def framecrop_emo(frame, threshold=0.9, qps=2, input_size=(1024, 1024), output_size=(256, 256), save_dir='.', fmt='.png'):
+def frame2emocrop(frame, threshold=0.9, qps=2, input_size=(1024, 1024), output_size=(256, 256), save_dir='.', fmt='.png'):
 	sleep(1 / qps)
 	img_base64 = frame2base64(frame)
 	img = cv2.resize(img, input_size)
@@ -151,7 +150,7 @@ def framecrop_emo(frame, threshold=0.9, qps=2, input_size=(1024, 1024), output_s
 	return res
 
 
-def videocrop_emo(video_path, fps=10, input_size=(1024, 1024), output_size=(256, 256), save_dir='.'):
+def video2emocrop(video_path, fps=10, input_size=(1024, 1024), output_size=(256, 256), save_dir='.'):
 	assert os.path.exists(video_path), 'Please make sure video_path exist.'
 	vc = cv2.VideoCapture(video_path)
 	cnt = 1
@@ -187,7 +186,7 @@ class LandmarksDetector:
                 print("Exception in get_landmarks()!")
 
 
-def imalign(src_file, dst_file, face_landmarks, output_size=1024, transform_size=1024, enable_padding=True, x_scale=1, y_scale=1, em_scale=0.1, alpha=False):
+def face_align(src_file, dst_file, face_landmarks, output_size=1024, transform_size=1024, enable_padding=True, x_scale=1, y_scale=1, em_scale=0.1, alpha=False):
     """Align function from FFHQ dataset pre-processing step
     https://github.com/NVlabs/ffhq-dataset/blob/master/download_ffhq.py
     """
@@ -276,7 +275,7 @@ def imalign(src_file, dst_file, face_landmarks, output_size=1024, transform_size
     img.save(dst_file, 'PNG')
 
 
-def align_face(raw_dir, align_dir, min_input_size=(256,256), output_size=1024, transform_size=1024, x_scale=1, y_scale=1, em_scale=0.1, alpha=False):
+def align_faces(raw_dir, align_dir, min_input_size=(256,256), output_size=1024, transform_size=1024, x_scale=1, y_scale=1, em_scale=0.1, alpha=False):
 	ensure_dir(align_dir)
 	for img_name in os.listdir(raw_dir):
         print(f'Aligning {img_name} ...')
@@ -298,7 +297,7 @@ def align_face(raw_dir, align_dir, min_input_size=(256,256), output_size=1024, t
                     print('Starting face alignment...')
                     face_img_name = '%s_%02d.png' % (os.path.splitext(img_name)[0], i)
                     aligned_face_path = os.path.join(align_dir, face_img_name)
-                    imalign(raw_img_path, aligned_face_path, face_landmarks, 
+                    face_align(raw_img_path, aligned_face_path, face_landmarks, 
                         output_size=output_size, transform_size=transform_size,
                         x_scale=x_scale, y_scale=y_scale, em_scale=em_scale, alpha=alpha)
                     print('Wrote result %s' % aligned_face_path)

@@ -5,6 +5,24 @@ import torch.nn as nn
 from torch.nn.parameter import Parameter
 
 
+class PositionalEncoding(nn.Module):
+    def __init__(self, d_model, dropout=0.1, maxlen=128):
+        super(PositionalEncoding, self).__init__()
+        self.dropout = nn.Dropout(p=dropout)
+
+        pe = torch.zeros(maxlen, d_model)
+        position = torch.arange(0, maxlen, dtype=torch.float).unsqueeze(1)
+        div_term = torch.exp(torch.arange(0, d_model, 2).float() * (-math.log(10000.0) / d_model))
+        pe[:, 0::2] = torch.sin(position * div_term)
+        pe[:, 1::2] = torch.cos(position * div_term)
+        pe = pe.unsqueeze(0).transpose(0, 1)
+        self.register_buffer('pe', pe)
+
+    def forward(self, x):
+        x = x + self.pe[:x.size(0), :]
+        return self.dropout(x)
+
+
 class ResnetBlock(nn.Module):
     def __init__(self, dim, use_bias=False):
         super(ResnetBlock, self).__init__()
@@ -168,3 +186,74 @@ class WClipper(object):
             w = module.w_beta.data
             w = w.clamp(self.clip_min, self.clip_max)
             module.w_beta.data = w
+
+
+class BiLSTM(nn.Module):
+    def __init__(self, input_size, hidden_size, output_size):
+        super(BiLSTM, self).__init__()
+        self.rnn = nn.LSTM(input_size, hidden_size, bidirectional=True, batch_first=True)
+        self.linear = nn.Linear(hidden_size * 2, output_size)
+
+    def forward(self, input):
+        """
+        input : visual feature [batch_size x T x input_size]
+        output : contextual feature [batch_size x T x output_size]
+        """
+        self.rnn.flatten_parameters()
+        h, _ = self.rnn(input)  # batch_size x T x input_size -> batch_size x T x (2*hidden_size)
+        output = self.linear(h)  # batch_size x T x output_size
+        return output
+
+
+class StackedLSTM(nn.Module):
+    def __init__(self, num_layers, input_size, hidden_size, dropout):
+        super(StackedLSTM, self).__init__()
+        self.num_layers = num_layers
+        self.dropout = nn.Dropout(dropout)
+        self.layers = nn.ModuleList()
+
+        for _ in range(num_layers):
+            self.layers.append(nn.LSTMCell(input_size, hidden_size))
+            input_size = hidden_size
+
+    def forward(self, x, hidden):
+        h_0, c_0 = hidden
+        h_1, c_1 = [], []
+        for i, layer in enumerate(self.layers):
+            h_1_i, c_1_i = layer(x, (h_0[i], c_0[i]))
+            x = h_1_i
+            if i + 1 != self.num_layers:
+                x = self.dropout(x)
+            h_1 += [h_1_i]
+            c_1 += [c_1_i]
+
+        h_1 = torch.stack(h_1)
+        c_1 = torch.stack(c_1)
+
+        return x, (h_1, c_1)
+
+
+class StackedGRU(nn.Module):
+    def __init__(self, num_layers, input_size, hidden_size, dropout):
+        super(StackedGRU, self).__init__()
+        self.num_layers = num_layers
+        self.dropout = nn.Dropout(dropout)
+        self.layers = nn.ModuleList()
+
+        for _ in range(num_layers):
+            self.layers.append(nn.GRUCell(input_size, hidden_size))
+            input_size = hidden_size
+
+    def forward(self, x, hidden):
+        h_0 = hidden
+        h_1 = []
+        for i, layer in enumerate(self.layers):
+            h_1_i = layer(x, h_0[i])
+            x = h_1_i
+            if i + 1 != self.num_layers:
+                x = self.dropout(x)
+            h_1 += [h_1_i]
+
+        h_1 = torch.stack(h_1)
+
+        return x, h_1

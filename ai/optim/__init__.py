@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 """ ai.optim """
-
 import math
 import numpy as np
 import torch
@@ -251,7 +250,7 @@ class AdamGC(Optimizer):
     """
 
     def __init__(self, params, lr=1e-3, betas=(0.9, 0.999), eps=1e-8,
-                 weight_decay=0, amsgrad=False, correct_bias=True):
+                 weight_decay=0, amsgrad=False, correct_bias=False):
         if not 0.0 <= lr:
             raise ValueError("Invalid learning rate: {}".format(lr))
         if not 0.0 <= eps:
@@ -361,7 +360,7 @@ class AdamW(Optimizer):
     """
 
     def __init__(self, params, lr=1e-3, betas=(0.9, 0.999), eps=1e-8,
-                 weight_decay=0, amsgrad=False, correct_bias=True):
+                 weight_decay=0, amsgrad=False, correct_bias=False):
         if not 0.0 <= lr:
             raise ValueError("Invalid learning rate: {}".format(lr))
         if not 0.0 <= eps:
@@ -440,7 +439,7 @@ class AdamW(Optimizer):
                     denom = exp_avg_sq.sqrt().add_(group['eps'])
 
                 # p.data.addcdiv_(-step_size, exp_avg, denom)
-                p.data.add_(-step_size,  torch.mul(p.data, group['weight_decay']).addcdiv_(1, exp_avg, denom) )
+                p.data.add_(-step_size, torch.mul(p.data, group['weight_decay']).addcdiv_(1, exp_avg, denom) )
 
         return loss
 
@@ -466,7 +465,7 @@ class AdamWGC(Optimizer):
     """
 
     def __init__(self, params, lr=1e-3, betas=(0.9, 0.999), eps=1e-8,
-                 weight_decay=0, amsgrad=False, correct_bias=True):
+                 weight_decay=0, amsgrad=False, correct_bias=False):
         if not 0.0 <= lr:
             raise ValueError("Invalid learning rate: {}".format(lr))
         if not 0.0 <= eps:
@@ -549,7 +548,7 @@ class AdamWGC(Optimizer):
                     step_size = step_size * math.sqrt(bias_correction2) / bias_correction1
 
                 # p.data.addcdiv_(-step_size, exp_avg, denom)
-                p.data.add_(-step_size,  torch.mul(p.data, group['weight_decay']).addcdiv_(1, exp_avg, denom) )
+                p.data.add_(-step_size, torch.mul(p.data, group['weight_decay']).addcdiv_(1, exp_avg, denom) )
 
         return loss
 
@@ -558,7 +557,7 @@ class RangerGC(Optimizer):
 
     def __init__(self, params, lr=1e-3, k=5, alpha=0.5, n_sma_threshhold=5, betas=(0.95,0.999), 
                  eps=1e-8, weight_decay=0, amsgrad=True, transformer='softplus', smooth=50,
-                 grad_transformer='square', correct_bias=True):
+                 grad_transformer='square', correct_bias=False):
         if not 0.0 <= alpha <= 1.0:
             raise ValueError(f'Invalid slow update rate: {alpha}')
         if not 1 <= k:
@@ -674,9 +673,9 @@ class RangerGC(Optimizer):
                     step_size = step_size * math.sqrt(bias_correction2) / bias_correction1
 
                 if  group['transformer'] =='softplus':
-                    sp = torch.nn.Softplus( smooth)
-                    denomf = sp( denomc)
-                    p_data_fp32.addcdiv_(-step_size, exp_avg, denomf )  
+                    sp = torch.nn.Softplus(smooth)
+                    denomf = sp(denomc)
+                    p_data_fp32.addcdiv_(-step_size, exp_avg, denomf)  
                 else:
                     denom = exp_avg_sq.sqrt().add_(group['eps'])
                     p_data_fp32.addcdiv_(-step_size * group['lr'], exp_avg, denom)

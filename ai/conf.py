@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 """ ai.conf """
-
 import os
 import yaml
 from configparser import ConfigParser
@@ -13,12 +12,14 @@ class AttrDict(dict):
 
 
 def get_yaml(path):
-	"""yaml 方式配置
+	""" 使用 .yaml 文件配置
 	"""
 	return AttrDict(yaml.load(open(path, 'r'), Loader=yaml.FullLoader))
 
 
 def get_conf(path):
+	""" 使用 .conf 文件配置
+	"""
 	conf = ConfigParser()
 	conf.read(path, encoding="UTF-8")
 	return conf
@@ -26,7 +27,7 @@ def get_conf(path):
 
 class Dict(dict):
 	"""
-	重写 dict, 使之通过 “.” 调用
+	重写 dict, 支持通过 “.” 调用
 	带参数 key 的 __call__ 方法用于实例自身的调用, 达到 () 调用的效果
 	"""
 	def __init__(self, *args, **kwargs):

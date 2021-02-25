@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 """ ai.helper """
-
 import argparse
 import os
 import re
@@ -472,7 +471,6 @@ def readlines(filepath, start=0, n=None):
 class AverageMeter(object):
     """ Computes and stores the average and current value
     """
-
     def __init__(self):
         self.reset()
 
@@ -496,7 +494,7 @@ def remove_punc(text):
 
 
 def search(pattern, sequence):
-    """从 sequence 中寻找子串 pattern
+    """ 从 sequence 中寻找子串 pattern
     如果找到，返回第一个下标；否则返回 -1。
     """
     n = len(pattern)
@@ -507,7 +505,7 @@ def search(pattern, sequence):
 
 
 def search_all(pattern, sequence):
-    """从 sequence 中寻找子串 pattern
+    """ 从 sequence 中寻找子串 pattern
     如果找到，返回所有起始坐标；否则返回 []。
     """
     res = []

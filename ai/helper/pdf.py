@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 """ ai.helper.pdf """
-
 import pdfbox
 from pathlib import Path
 
