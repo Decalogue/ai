@@ -1,12 +1,1 @@
 tqdm
-pyecharts
-snapshot_selenium
-dlib
-scipy
-keras
-tensorflow-gpu
-pytorch
-torchvision
-opencv-python
-baidu-aip
-Pillow
