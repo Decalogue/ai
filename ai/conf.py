@@ -26,9 +26,8 @@ def get_conf(path):
 
 
 class Dict(dict):
-	"""
-	重写 dict, 支持通过 “.” 调用
-	带参数 key 的 __call__ 方法用于实例自身的调用, 达到 () 调用的效果
+	""" 重写 dict, 支持通过 “.” 调用带参数 key 的 __call__ 方法
+		用于实例自身的调用, 达到 () 调用的效果
 	"""
 	def __init__(self, *args, **kwargs):
 		super(Dict, self).__init__(*args, **kwargs)
@@ -61,7 +60,7 @@ class Dict(dict):
 
 
 class Config(object):
-	"""链式配置
+	""" 链式配置
 	"""
 	def __init__(self, filepath=None):
 		if filepath:

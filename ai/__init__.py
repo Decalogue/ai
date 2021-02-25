@@ -5,7 +5,8 @@ import random
 import torch
 from os.path import isfile
 
-__version__ = '0.1.1'
+
+__version__ = '0.1.2'
 
 
 def set_all(seed, n_gpu=1):
@@ -29,13 +30,12 @@ if is_tf_available():
     import tensorflow as tf
 
 
-def to_list(tensor):
+def tensor2list(tensor):
     return tensor.detach().cpu().tolist()
 
 
 def cat(tensors, dim=0):
-    """
-    Efficient version of torch.cat that avoids a copy if there is only a single element in a list.
+    """ Efficient version of torch.cat that avoids a copy if there is only a single element in a list.
     """
     assert isinstance(tensors, (list, tuple))
     if len(tensors) == 1:
@@ -58,7 +58,7 @@ def load(model, ckpt_path):
         state_dict = torch.load(ckpt_path)
         new_state_dict = OrderedDict()
         for k, v in state_dict.items():
-            name = k[7:] # remove 'module.'
+            name = k[7:] if name.startswith('module.') else k
             new_state_dict[name] = v
         model.load_state_dict(new_state_dict)
     return model

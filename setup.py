@@ -1,13 +1,16 @@
 # -*- coding: utf-8 -*-
 import os
 import sys
+import ai
 from setuptools import setup, find_packages
 
-version = "0.1.1"
+
+version = ai.__version__
 
 if sys.argv[-1] == 'tag':
     os.system("git tag -a %s -m 'version %s'" % (version, version))
-    os.system("git push --tags")
+    os.system("git push origin --tags")
+    os.system("git push --all origin")
     sys.exit()
 elif sys.argv[-1] == 'publish':
     # os.system("python setup.py sdist upload")
@@ -54,6 +57,7 @@ setup(
         "Programming Language :: Python :: 3.5",
         "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",
-        "Programming Language :: Python :: 3.8"
+        "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: 3.9"
     ]
 )
