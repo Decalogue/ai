@@ -21,15 +21,6 @@ def set_all(seed, n_gpu=1):
     torch.backends.cudnn.benchmark = True
 
 
-if is_torch_available():
-    import torch
-    from torch.utils.data import TensorDataset
-
-
-if is_tf_available():
-    import tensorflow as tf
-
-
 def tensor2list(tensor):
     return tensor.detach().cpu().tolist()
 
