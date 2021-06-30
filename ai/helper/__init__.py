@@ -66,6 +66,12 @@ def ensure_dir(path):
         os.makedirs(path)
 
 
+def ensure_dirs(dir_list):
+    """ 确保目录存在 """
+    for d in dir_list:
+        ensure_dir(d)
+
+
 def init_logger(log_name, log_dir):
     """ 日志模块
         1. 同时将日志打印到屏幕和文件中

@@ -3,13 +3,18 @@
 import numpy as np
 import torch
 
+try:
+    from torch.utils.tensorboard import SummaryWriter
+except ImportError:
+    from tensorboardX import SummaryWriter
+
 
 class FGM():
     def __init__(self, model):
         self.model = model
         self.backup = {}
 
-    def attack(self, epsilon=1., emb_name='word_embedding.'):
+    def attack(self, epsilon=1., emb_name='word_embeddings'):
         # emb_name 为模型中 embedding 的参数名
         for name, param in self.model.named_parameters():
             if param.requires_grad and emb_name in name:
@@ -19,7 +24,7 @@ class FGM():
                     r_at = epsilon * param.grad / norm
                     param.data.add_(r_at)
 
-    def restore(self, emb_name='word_embedding.'):
+    def restore(self, emb_name='word_embeddings'):
         # emb_name 为模型中 embedding 的参数名
         for name, param in self.model.named_parameters():
             if param.requires_grad and emb_name in name:
@@ -35,7 +40,7 @@ class PGD():
         self.grad_backup = {}
         self.k = k
 
-    def attack(self, epsilon=1., alpha=0.33, emb_name='word_embedding.', is_first_attack=False):
+    def attack(self, epsilon=1., alpha=0.33, emb_name='word_embeddings', is_first_attack=False):
         # emb_name 为模型中 embedding 的参数名
         for name, param in self.model.named_parameters():
             if param.requires_grad and emb_name in name:
@@ -47,7 +52,7 @@ class PGD():
                     param.data.add_(r_at)
                     param.data = self.project(name, param.data, epsilon)
 
-    def restore(self, emb_name='word_embedding.'):
+    def restore(self, emb_name='word_embeddings'):
         # emb_name 为模型中 embedding 的参数名
         for name, param in self.model.named_parameters():
             if param.requires_grad and emb_name in name: 

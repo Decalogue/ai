@@ -6,7 +6,7 @@ import torch
 from os.path import isfile
 
 
-__version__ = '0.1.5'
+__version__ = '0.1.6'
 
 
 def set_all(seed, n_gpu=1):
@@ -49,7 +49,7 @@ def load(model, ckpt_path):
         state_dict = torch.load(ckpt_path)
         new_state_dict = OrderedDict()
         for k, v in state_dict.items():
-            name = k[7:] if name.startswith('module.') else k
+            name = k.lstrip('module.')
             new_state_dict[name] = v
         model.load_state_dict(new_state_dict)
     return model

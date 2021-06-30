@@ -3,6 +3,7 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from torch.nn.parameter import Parameter
 
 
 class Swish(nn.Module):
@@ -12,22 +13,6 @@ class Swish(nn.Module):
     def forward(self, x):
         x = x * F.sigmoid(x)
         return x
-
-
-def f1_loss(predict, target, eps=1e-8):
-    loss = 0.
-    lack_cls = target.sum(dim=0) == 0
-    if lack_cls.any():
-        loss += F.binary_cross_entropy_with_logits(
-            predict[:, lack_cls], target[:, lack_cls])
-    predict = torch.sigmoid(predict)
-    predict = torch.clamp(predict * (1-target), min=0.01) + predict * target
-    tp = predict * target
-    tp = tp.sum(dim=0)
-    precision = tp / (predict.sum(dim=0) + eps)
-    recall = tp / (target.sum(dim=0) + eps)
-    f1 = 2 * (precision * recall / (precision + recall + eps))
-    return 1. - f1.mean() + loss
 
 
 class GeM(nn.Module):

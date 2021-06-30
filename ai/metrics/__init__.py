@@ -24,6 +24,16 @@ class AverageMeter(object):
         self.avg = self.sum / self.count
 
 
+def accuracy(preds, labels):
+    return (preds == labels).mean()
+
+
+def acc_and_f1(preds, labels):
+    acc = accuracy(preds, labels)
+    f1 = f1_score(y_true=labels, y_pred=preds)
+    return acc, f1
+
+
 def corpus_ed(references, hypotheses):
     res = 0.
     for gt_group, pred in zip(references, hypotheses):
