@@ -40,13 +40,4 @@ Documentation
 
 Documentation is available online at https://ai-cn.readthedocs.io/zh/latest/
 
-Contact me
-==========
-
-You can contact me with wechat if you want to know more about AI.
-
-.. image:: https://github.com/Decalogue/ai/blob/master/docs/QRcode.jpg
-   :target: https://github.com/Decalogue/ai
-   :alt: Contact me
-
 Author: `Decalogue`_
