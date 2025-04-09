@@ -18,7 +18,7 @@
 # -- Project information -----------------------------------------------------
 
 project = 'ai'
-copyright = '2021, Decalogue'
+copyright = '2025, Decalogue'
 author = 'Decalogue'
 
 

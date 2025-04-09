@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-""" ai.conf """
 import os
 import yaml
 from configparser import ConfigParser
@@ -11,23 +9,22 @@ class AttrDict(dict):
 		self.__dict__ = self
 
 
-def get_yaml(path):
-	""" 使用 .yaml 文件配置
+def get_yaml_config(filepath):
+	"""使用 .yaml 文件配置
 	"""
-	return AttrDict(yaml.load(open(path, 'r'), Loader=yaml.FullLoader))
+	return AttrDict(yaml.load(open(filepath, 'r'), Loader=yaml.FullLoader))
 
 
-def get_conf(path):
-	""" 使用 .conf 文件配置
+def get_conf_config(filepath):
+	"""使用 .conf 文件配置
 	"""
 	conf = ConfigParser()
-	conf.read(path, encoding="UTF-8")
+	conf.read(filepath, encoding="UTF-8")
 	return conf
 
 
 class Dict(dict):
-	""" 重写 dict, 支持通过 “.” 调用带参数 key 的 __call__ 方法
-		用于实例自身的调用, 达到 () 调用的效果
+	"""重写 dict, 支持 “.” 方式的属性调用
 	"""
 	def __init__(self, *args, **kwargs):
 		super(Dict, self).__init__(*args, **kwargs)
@@ -60,52 +57,52 @@ class Dict(dict):
 
 
 class Config(object):
-	""" 链式配置
+	"""支持链式调用的 Config
 	"""
 	def __init__(self, filepath=None):
 		if filepath:
-			self.path = filepath
+			self.filepath = filepath
 		else:
 			cur_dir = os.path.split(os.path.realpath(__file__))[0]
-			self.path = os.path.join(cur_dir, "self.conf")
-		self.conf = get_conf(self.path)
+			self.filepath = os.path.join(cur_dir, "self.conf")
+		self.config = get_conf_config(self.filepath)
 		self.d = Dict()
-		for s in self.conf.sections():
+		for s in self.config.sections():
 			value = Dict()
-			for k in self.conf.options(s):
-				value[k] = self.conf.get(s, k)
+			for k in self.config.options(s):
+				value[k] = self.config.get(s, k)
 			self.d[s] = value
 
 	def add(self, section):
-		self.conf.add_section(section)
+		self.config.add_section(section)
 		self.d[section] = Dict()
-		with open(self.path, 'w', encoding="UTF-8") as f:
-			self.conf.write(f)
+		with open(self.filepath, 'w', encoding="UTF-8") as f:
+			self.config.write(f)
 
-	def set(self, section, k, v):
-		self.conf.set(section, k, v)
-		self.d[section][k] = v
-		with open(self.path, 'w', encoding="UTF-8") as f:
-			self.conf.write(f)
+	def set(self, section, key, value):
+		self.config.set(section, key, value)
+		self.d[section][key] = value
+		with open(self.filepath, 'w', encoding="UTF-8") as f:
+			self.config.write(f)
 
 	def get(self, section, key):
-		return self.conf.get(section, key, default=None)
+		return self.config.get(section, key, default=None)
 
 	def remove_section(self, section):
-		self.conf.remove_section(section)
+		self.config.remove_section(section)
 		del self.d[section]
-		with open(self.path, 'w', encoding="UTF-8") as f:
-			self.conf.write(f)
+		with open(self.filepath, 'w', encoding="UTF-8") as f:
+			self.config.write(f)
 
 	def remove_option(self, section, key):
-		self.conf.remove_option(section, key)
+		self.config.remove_option(section, key)
 		del self.d[section][key]
-		with open(self.path, 'w', encoding="UTF-8") as f:
-			self.conf.write(f)
+		with open(self.filepath, 'w', encoding="UTF-8") as f:
+			self.config.write(f)
 
 	def save(self):
 		for s in self.d:
-			if s not in self.conf.sections():
+			if s not in self.config.sections():
 				self.add(s)
 			for k in self.d[s]:
 				try:

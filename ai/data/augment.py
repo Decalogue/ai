@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 import cv2
 import math
 import random
@@ -20,7 +19,7 @@ class WarpMLS:
         self.rdy = np.zeros((self.dst_h, self.dst_w))
 
     @staticmethod
-    def __bilinear_interp(x, y, v11, v12, v21, v22):
+    def _bilinear_interp(x, y, v11, v12, v21, v22):
         return (v11 * (1 - y) + v12 * y) * (1 - x) + (v21 * (1 - y) + v22 * y) * x
 
     def generate(self):
@@ -122,10 +121,10 @@ class WarpMLS:
 
                 di = np.reshape(np.arange(h), (-1, 1))
                 dj = np.reshape(np.arange(w), (1, -1))
-                delta_x = self.__bilinear_interp(di / h, dj / w,
+                delta_x = self._bilinear_interp(di / h, dj / w,
                                                  self.rdx[i, j], self.rdx[i, nj],
                                                  self.rdx[ni, j], self.rdx[ni, nj])
-                delta_y = self.__bilinear_interp(di / h, dj / w,
+                delta_y = self._bilinear_interp(di / h, dj / w,
                                                  self.rdy[i, j], self.rdy[i, nj],
                                                  self.rdy[ni, j], self.rdy[ni, nj])
                 nx = j + dj + delta_x * self.trans_ratio
@@ -143,13 +142,14 @@ class WarpMLS:
                 else:
                     x = ny - nyi
                     y = nx - nxi
-                dst[i:i + h, j:j + w] = self.__bilinear_interp(x,
-                                                               y,
-                                                               self.src[nyi, nxi],
-                                                               self.src[nyi, nxi1],
-                                                               self.src[nyi1, nxi],
-                                                               self.src[nyi1, nxi1]
-                                                               )
+                dst[i:i + h, j:j + w] = self._bilinear_interp(
+                    x,
+                    y,
+                    self.src[nyi, nxi],
+                    self.src[nyi, nxi1],
+                    self.src[nyi1, nxi],
+                    self.src[nyi1, nxi1]
+                )
         dst = np.clip(dst, 0, 255)
         dst = np.array(dst, dtype=np.uint8)
         return dst
@@ -159,6 +159,8 @@ def distort(src, segment=4):
     img_h, img_w = src.shape[:2]
     cut = img_w // segment
     thresh = cut // 3
+    if thresh == 0:
+        return src
 
     src_pts = list()
     dst_pts = list()
@@ -194,6 +196,8 @@ def stretch(src, segment=4):
 
     cut = img_w // segment
     thresh = cut * 4 // 5
+    if thresh == 0:
+        return src
 
     src_pts = list()
     dst_pts = list()
@@ -227,6 +231,8 @@ def perspective(src):
     img_h, img_w = src.shape[:2]
 
     thresh = img_h // 2
+    if thresh == 0:
+        return src
 
     src_pts = list()
     dst_pts = list()
@@ -247,14 +253,52 @@ def perspective(src):
     return dst
 
 
+def gridmask(src, d1=4, d2=16, rotate=1, ratio=0.5, mode=0):
+    h, w, c = src.shape
+    hh = math.ceil((math.sqrt(h*h + w*w)))
+    d = np.random.randint(d1, d2)
+    l = math.ceil(d * ratio)
+    
+    mask = np.ones((hh, hh), np.float32)
+    st_h = np.random.randint(d)
+    st_w = np.random.randint(d)
+    for i in range(-1, hh//d+1):
+        s = d*i + st_h
+        t = s + l
+        s = max(min(s, hh), 0)
+        t = max(min(t, hh), 0)
+        mask[s:t,:] *= 0
+    for i in range(-1, hh//d+1):
+        s = d*i + st_w
+        t = s + l
+        s = max(min(s, hh), 0)
+        t = max(min(t, hh), 0)
+        mask[:,s:t] *= 0
+    r = np.random.randint(rotate)
+    mask = Image.fromarray(np.uint8(mask))
+    mask = mask.rotate(r)
+    mask = np.asarray(mask)
+    mask = mask[(hh-h)//2:(hh-h)//2+h, (hh-w)//2:(hh-w)//2+w]
+
+    if mode == 1:
+        mask = 1 - mask
+
+    if c == 3:
+        mask = cv2.merge([mask, mask, mask])
+
+    dst = src * mask
+    return np.uint8(dst)
+
+
 class RandomDistort(object):
     def __init__(self, p=0.1):
         self.p = p
 
     def __call__(self, img):
+        if random.random() > self.p:
+            return img
         img = np.array(img)
-        if random.random() < self.p:
-            img = distort(img)
+        img = distort(img)
         return Image.fromarray(np.uint8(img))
 
     def __repr__(self):
@@ -266,9 +310,10 @@ class RandomStretch(object):
         self.p = p
 
     def __call__(self, img):
+        if random.random() > self.p:
+            return img
         img = np.array(img)
-        if random.random() < self.p:
-            img = stretch(img)
+        img = stretch(img)
         return Image.fromarray(np.uint8(img))
 
     def __repr__(self):
@@ -280,9 +325,25 @@ class RandomPerspective(object):
         self.p = p
 
     def __call__(self, img):
+        if random.random() > self.p:
+            return img
         img = np.array(img)
-        if random.random() < self.p:
-            img = perspective(img)
+        img = perspective(img)
+        return Image.fromarray(np.uint8(img))
+
+    def __repr__(self):
+        return self.__class__.__name__ + '()'
+
+
+class RandomGridMask(object):
+    def __init__(self, p=0.5):
+        self.p = p
+
+    def __call__(self, img):
+        if random.random() > self.p:
+            return img
+        img = np.array(img)
+        img = gridmask(img)
         return Image.fromarray(np.uint8(img))
 
     def __repr__(self):
@@ -301,15 +362,16 @@ class AddPepperNoise(object):
         self.p = p
 
     def __call__(self, img):
+        if random.random() > self.p:
+            return img
         img = np.array(img)
-        if random.random() < self.p:
-            h, w, c = img.shape
-            signal_pct = self.snr
-            noise_pct = (1 - self.snr)
-            mask = np.random.choice((0, 1, 2), size=(h, w, 1), p=[signal_pct, noise_pct/2., noise_pct/2.])
-            mask = np.repeat(mask, c, axis=2)
-            img[mask == 1] = 255   # 盐噪声
-            img[mask == 2] = 0     # 椒噪声
+        h, w, c = img.shape
+        signal_pct = self.snr
+        noise_pct = (1 - self.snr)
+        mask = np.random.choice((0, 1, 2), size=(h, w, 1), p=[signal_pct, noise_pct/2., noise_pct/2.])
+        mask = np.repeat(mask, c, axis=2)
+        img[mask == 1] = 255   # 盐噪声
+        img[mask == 2] = 0     # 椒噪声
         return Image.fromarray(np.uint8(img))
 
     def __repr__(self):
@@ -319,10 +381,13 @@ class AddPepperNoise(object):
 class GaussianBlur(object):
     """Gaussian blur augmentation in SimCLR https://arxiv.org/abs/2002.05709"""
 
-    def __init__(self, sigma=[.1, 2.]):
+    def __init__(self, sigma=[.1, 2.], p=0.5):
         self.sigma = sigma
+        self.p = p
 
     def __call__(self, img):
+        if random.random() > self.p:
+            return img
         sigma = random.uniform(self.sigma[0], self.sigma[1])
         img = img.filter(ImageFilter.GaussianBlur(radius=sigma))
         return img
@@ -341,26 +406,29 @@ class RandomErasing(object):
         r1: min aspect ratio
         mean: erasing value
     """
-    def __init__(self, p=0.5, sl=0.02, sh=0.1, r1=0.3, mean=[0.4914, 0.4822, 0.4465], max_attempts=20):
+    def __init__(self, p=0.5, sl=0.01, sh=0.1, r1=0.2, max_attempts=10, aspect_ratio=None, mean=[0.4914, 0.4822, 0.4465]):
         self.p = p
         self.sl = sl
         self.sh = sh
         self.r1 = r1
         self.mean = mean
         self.max_attempts = max_attempts
+        self.aspect_ratio = aspect_ratio
        
     def __call__(self, img):
-        img = np.array(img)
         if random.random() > self.p:
-            return Image.fromarray(np.uint8(img))
-
+            return img
+        img = np.array(img)
         h, w, c = img.shape
 
         for attempt in range(self.max_attempts):
             area = h * w
        
             target_area = random.uniform(self.sl, self.sh) * area
-            aspect_ratio = random.uniform(self.r1, 1/self.r1)
+            if self.aspect_ratio is None:
+                aspect_ratio = random.uniform(self.r1, 1/self.r1)
+            else:
+                aspect_ratio = self.aspect_ratio
 
             eh = int(round(math.sqrt(target_area * aspect_ratio)))
             ew = int(round(math.sqrt(target_area / aspect_ratio)))

@@ -1,1 +1,4 @@
 tqdm
+fire
+yaml
+bz2

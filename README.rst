@@ -21,12 +21,12 @@ AI
 Overview
 ========
 
-`AI is a simple and easy-to-use artificial intelligence tool library. AI 是一个简单好用的人工智能工具库。`
+`AI is a easy-to-use artificial intelligence tool library. AI 是一个好用的人工智能工具库。`
 
 Requirements
 ============
 
-* Python 3.5+
+* Python 3.8+
 
 Install
 =======
