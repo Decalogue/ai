@@ -12,8 +12,8 @@ if sys.argv[-1] == 'tag':
     os.system("git push --all origin")
     sys.exit()
 elif sys.argv[-1] == 'publish':
-    os.system("rm -rf dist/ build/ *.egg-info")  # 先清理旧文件
-    os.system("python setup.py sdist bdist_wheel")  # 构建两种格式
+    os.system("rm -rf dist/ build/ *.egg-info")
+    os.system("python setup.py sdist bdist_wheel")
     os.system("twine upload dist/*")
     sys.exit()
 elif sys.argv[-1] == 'test':
@@ -37,8 +37,6 @@ setup(
     author="Decalogue",
     author_email="1044908508@qq.com",
     description="Ai lib.",
-    long_description=open('README.rst').read() if os.path.exists('README.rst') else "Ai lib.",
-    long_description_content_type="text/x-rst",
     license="MIT",
     url="https://github.com/Decalogue/ai",
     packages=find_packages(),
@@ -56,8 +54,6 @@ setup(
         "Operating System :: POSIX :: Linux",
         "Operating System :: MacOS :: MacOS X",
         "Operating System :: Other OS",
-        "Programming Language :: Python :: 3.8",
-        "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
         "Programming Language :: Python :: 3.11",
         "Programming Language :: Python :: 3.12"
