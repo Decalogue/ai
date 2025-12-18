@@ -16,11 +16,11 @@ def ensure_dirs(dir_list):
         ensure_dir(dir_path)
 
 
-def unpack_bz2(src_path):
+def unpack_bz2(src_path, dst_path=None):
     '''解压 bz2 文件
     '''
     data = bz2.BZ2File(src_path).read()
-    dst_path = src_path[:-4]
+    if dst_path is None:
+        dst_path = src_path[:-4]
     with open(dst_path, 'wb') as fp:
         fp.write(data)
-    return dst_path
