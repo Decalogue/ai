@@ -1,5 +1,7 @@
 import os
 import bz2
+import time
+import requests
 
 
 def ensure_dir(dir_path):
@@ -24,3 +26,13 @@ def unpack_bz2(src_path, dst_path=None):
         dst_path = src_path[:-4]
     with open(dst_path, 'wb') as fp:
         fp.write(data)
+
+
+def get_current_time(format_string="%Y-%m-%d-%H-%M-%S"):
+    return time.strftime(format_string, time.localtime())
+
+
+def url2file(url, savepath=None):
+    assert savepath is not None, 'The savepath should not be None'
+    with open(savepath, 'wb') as f:
+        f.write(requests.get(url).content)
